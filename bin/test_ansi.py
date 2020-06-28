@@ -1,7 +1,21 @@
 #!/usr/bin/env python
 #
+# Author: John.Simpson@hmhs.com john@swajime.com
+# 
+# This is just a test script for ansi.py
+# Works with Python 2 or Python 3
+# Runs on Linux or Windows
+#
+# Please report any issues to author.
+#
 
+# from __future__ imports must occur at the beginning of the file
 from __future__ import print_function
+
+VERSION = "0.0.2"
+WARNING_COLOR = "YELLOW"
+ERROR_COLOR = "RED"
+
 from subprocess import check_output, STDOUT, CalledProcessError
 from ansi import ANSI
 
@@ -9,15 +23,21 @@ import argparse
 import os
 import sys
 
+# The purpose of this function is to convert bytestrings or strings to strings before printing.
+# The check_output function for example returns bytestrings or strings depending on Python version.
 def fsdecode(byte_or_str):
-    if sys.version_info >= (3, 0):
+    if byte_or_str is None:
+        return None
+    elif sys.version_info >= (3, 0):
         if isinstance(byte_or_str, str):
             return byte_or_str
         else:
             return byte_or_str.decode(sys.stdout.encoding)
     else:
-        #return str(byte_or_str, sys.stdout.encoding)
-        return str(byte_or_str.encode(sys.stdout.encoding))
+        if sys.stdout.encoding is None:
+            return str(byte_or_str)
+        else:
+            return str(byte_or_str.encode(sys.stdout.encoding))
 
 
 if __name__ == "__main__":
@@ -29,33 +49,43 @@ if __name__ == "__main__":
         help="colorize the output; WHEN can be 'never', 'auto', or 'always' (the default); more info below",
         choices=['never', 'always', 'auto'],
         metavar='=WHEN')
-    parser.add_argument('--version', action='version', version='%(prog)s 0.0.1')
+    parser.add_argument('--version', action='version', version='%(prog)s ' + VERSION)
     
     args = parser.parse_args()
     ANSI.setWHEN(args.color)
-
+    
+    yellowWarning = ANSI(WARNING_COLOR)
+    redError = ANSI(ERROR_COLOR, None, 'BLINKING')
+    
     output = ''
 
     try:
-        output += fsdecode(check_output(['java', 'HelloWorld'], stderr=STDOUT))
-        output += fsdecode(check_output(['java', 'a_ExcelWriter'], stderr=STDOUT))
-        output += fsdecode(check_output(['java', 'SimpleExcelReaderExample'], stderr=STDOUT))
+        # attempt some shell commands that may error out
+        output += ANSI.display('This is a test.\n', 'YELLOW', 'NOTCYAN', 'NOSTYLE', 'UNDERLINE')
+        output += fsdecode(check_output(['echo', 'java', 'HelloWorld'], stderr=STDOUT))
+        output += fsdecode(check_output(['java', 'not found', 'ExcelWriter'], stderr=STDOUT))
+        output += fsdecode(check_output(['echo', 'java', 'SimpleExcelReaderExample'], stderr=STDOUT))
         print(output)
     
     except CalledProcessError as e:
+        # print any output we did collect
         if output:
             print(output)
 
+        # print any output we can from the failing call in YELLOW
         if e.output:
-            print(ANSI.setANSI(fsdecode(e.output), 'Yellow', 'Black'))
+            print(yellowWarning.display(fsdecode(e.output)))
 
-        print(ANSI.setANSI("CalledProcessError: Command '{}' returned {}.".format(" ".join(e.cmd), e.returncode), 'Red', 'Black'))
+        # print the error itself in RED
+        print(redError.display("CalledProcessError: Command '{}' returned {}.".format(" ".join(e.cmd), e.returncode)))
 
     except OSError as e:
+        # print any output we did collect
         if output:
             print(output)
         
+        # print the error itself in RED
         if e.filename:
-            print(ANSI.setANSI("OSError: {}: {} in file {}.".format(e.errno, e.strerror, e.filename), 'Red', 'Black'))
+            print(ANSI.display("OSError: {}: {} in file {}.".format(e.errno, e.strerror, e.filename), ERROR_COLOR))
         else:
-            print(ANSI.setANSI("OSError: {}: {}.".format(e.errno, e.strerror), 'Red', 'Black'))
+            print(ANSI.display("OSError: {}: {}.".format(e.errno, e.strerror), ERROR_COLOR))
