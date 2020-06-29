@@ -40,9 +40,12 @@ class class_or_instancemethod(classmethod):
 class MetaANSI(type):
     def __init__(cls, name, bases, d):
         if not 'HOME' in os.environ:
-            raise EnvironmentError('The color library requires HOME to be set in your environment.  JSON for available colors will be stored in {}.'.format(os.path.join('$HOME', color_file_dir, color_file_name)))
+            if not 'HOMEDRIVE' in os.environ or not 'HOMEPATH' in os.environ:
+                raise EnvironmentError('The color library requires HOME or HOMEDRIVE and HOMEPATH to be set in your environment.  JSON for available colors will be stored in {}.'.format(os.path.join('$HOME', color_file_dir, color_file_name)))
+            HOME = os.getenv('HOMEDRIVE') + os.getenv('HOMEPATH')
+        else:
+            HOME = os.getenv('HOME')
             
-        HOME = os.getenv('HOME')
         color_dir = os.path.join(HOME, color_file_dir)
         color_path = os.path.join(color_dir, color_file_name) 
         if os.path.exists(color_path):

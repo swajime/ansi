@@ -61,7 +61,7 @@ if __name__ == "__main__":
 
     try:
         # attempt some shell commands that may error out
-        output += ANSI.display('This is a test.\n', 'YELLOW', 'NOTCYAN', 'NOSTYLE', 'UNDERLINE')
+        output += ANSI.display('This is a test.', 'YELLOW', 'NOTCYAN', 'NOSTYLE', 'UNDERLINE') + '\n'
         output += fsdecode(check_output(['echo', 'java', 'HelloWorld'], stderr=STDOUT))
         output += fsdecode(check_output(['java', 'not found', 'ExcelWriter'], stderr=STDOUT))
         output += fsdecode(check_output(['echo', 'java', 'SimpleExcelReaderExample'], stderr=STDOUT))
