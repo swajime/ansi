@@ -12,12 +12,12 @@
 # from __future__ imports must occur at the beginning of the file
 from __future__ import print_function
 
-VERSION = "0.0.2"
+VERSION = "0.0.3"
 WARNING_COLOR = "YELLOW"
 ERROR_COLOR = "RED"
 
 from subprocess import check_output, STDOUT, CalledProcessError
-from ansi import ANSI
+from swajime import swaANSI as ANSI
 
 import argparse
 import os
@@ -61,7 +61,7 @@ if __name__ == "__main__":
 
     try:
         # attempt some shell commands that may error out
-        output += ANSI.display('This is a test.', 'YELLOW', 'NOTCYAN', 'NOSTYLE', 'UNDERLINE') + '\n'
+        output += ANSI.display('Use --color option to enable color.', 'YELLOW', None, 'UNDERLINE') + '\n'
         output += fsdecode(check_output(['echo', 'java', 'HelloWorld'], stderr=STDOUT))
         output += fsdecode(check_output(['java', 'not found', 'ExcelWriter'], stderr=STDOUT))
         output += fsdecode(check_output(['echo', 'java', 'SimpleExcelReaderExample'], stderr=STDOUT))

@@ -11,7 +11,7 @@
 # from __future__ imports must occur at the beginning of the file
 from __future__ import print_function
 
-VERSION = "0.0.2"
+VERSION = "0.0.3"
 color_file_dir = 'dat'  # in $HOME
 color_file_name = 'color_data.json';
 
@@ -36,7 +36,7 @@ class class_or_instancemethod(classmethod):
         descr_get = super(class_or_instancemethod, self).__get__ if instance is None else self.__func__.__get__
         return descr_get(instance, type_)
 
-# Used to initialize ANSI class without instantiating any objects.
+# Used to initialize swaANSI class without instantiating any objects.
 class MetaANSI(type):
     def __init__(cls, name, bases, d):
         if not 'HOME' in os.environ:
@@ -82,7 +82,7 @@ class MetaANSI(type):
         for color in cls.colors:
             cls._colors[color.lower()] = cls._colors[color]
 
-class ANSI(six.with_metaclass(MetaANSI, object)):
+class swaANSI(six.with_metaclass(MetaANSI, object)):
     _when = 'always'
     _colors = {}
     _default_foreground = None
@@ -200,34 +200,34 @@ class ANSI(six.with_metaclass(MetaANSI, object)):
 
 if __name__ == "__main__":
     print('Color test.');   
-    for color in sorted(ANSI.colors):
-        print(ANSI.display('{:>40}'.format('This is a {} foreground!'.format(color)), color, None) + ANSI.display('{:<40}'.format('This is a {} background!'.format(color)), None, color))
+    for color in sorted(swaANSI.colors):
+        print(swaANSI.display('{:>40}'.format('This is a {} foreground!'.format(color)), color, None) + swaANSI.display('{:<40}'.format('This is a {} background!'.format(color)), None, color))
 
     print()
 
     print('Style test.');
-    for style in ANSI.styles:
-        print(ANSI.display('This is a {} test!'.format(style), 'WHITE', None, style))
+    for style in swaANSI.styles:
+        print(swaANSI.display('This is a {} test!'.format(style), 'WHITE', None, style))
     
-    print(ANSI.display('This should be red!', 'Red', None, 'UNDERLINE', 'BLINKING'))
-    print(ANSI.display('This should be red!', 'RED'))
-    print(ANSI.display('Testing', None, None, None, None, None, None))
-    print(ANSI.display('Testing', 'FAKE', 'FAKE', 'FAKE', 'FAKE', 'FAKE', 'FAKE'))
-    print(ANSI.display('Testing', 'RED', 'FAKE', 'FAKE', 'FAKE', 'FAKE', 'FAKE'))
-    print(ANSI.display('Testing', 'RED', 'YELLOW', 'FAKE', 'FAKE', 'FAKE', 'FAKE'))
-    print(ANSI.display('Testing', 'RED', 'YELLOW', 'UNDERLINE', 'FAKE', 'FAKE', 'FAKE'))
+    print(swaANSI.display('This should be red!', 'Red', None, 'UNDERLINE', 'BLINKING'))
+    print(swaANSI.display('This should be red!', 'RED'))
+    print(swaANSI.display('Testing', None, None, None, None, None, None))
+    print(swaANSI.display('Testing', 'FAKE', 'FAKE', 'FAKE', 'FAKE', 'FAKE', 'FAKE'))
+    print(swaANSI.display('Testing', 'RED', 'FAKE', 'FAKE', 'FAKE', 'FAKE', 'FAKE'))
+    print(swaANSI.display('Testing', 'RED', 'YELLOW', 'FAKE', 'FAKE', 'FAKE', 'FAKE'))
+    print(swaANSI.display('Testing', 'RED', 'YELLOW', 'UNDERLINE', 'FAKE', 'FAKE', 'FAKE'))
     
-    ANSI.setBackground('BLUE')
-    ANSI.setForeground('CYAN')
-    ANSI.setStyles('STRIKETHROUGH', 'Invalid', 'UNDERLINE')
+    swaANSI.setBackground('BLUE')
+    swaANSI.setForeground('CYAN')
+    swaANSI.setStyles('STRIKETHROUGH', 'Invalid', 'UNDERLINE')
 
-    print(ANSI.display('cyan on blue defaults'))
+    print(swaANSI.display('cyan on blue defaults'))
 
-    ANSI.setDefaults('YELLOW', 'GREEN', 'STRIKETHROUGH', 'UNDERLINE')
-    print(ANSI.display('yellow on green defaults'))
+    swaANSI.setDefaults('YELLOW', 'GREEN', 'STRIKETHROUGH', 'UNDERLINE')
+    print(swaANSI.display('yellow on green defaults'))
 
-    red_error = ANSI('RED', 'WHITE', 'UNDERLINE')
-    yellow_warning = ANSI('YELLOW', 'BLACK', 'UNDERLINE')
+    red_error = swaANSI('RED', 'WHITE', 'UNDERLINE')
+    yellow_warning = swaANSI('YELLOW', 'BLACK', 'UNDERLINE')
 
     print(yellow_warning.display('This is a yellow warning'))
     print(red_error.display('This is a red error'))
@@ -240,10 +240,10 @@ if __name__ == "__main__":
     print(red_error.display('This is a red error', 'Magenta', 'Green'))
    
 
-    print(ANSI.display('yellow on green defaults'))
+    print(swaANSI.display('yellow on green defaults'))
 
     print(yellow_warning.display('This is a yellow warning'))
     print(red_error.display('This is a red error'))
     
-    print(ANSI.display('Testing Complete', foreground='Cyan', background='Blue'))
+    print(swaANSI.display('Testing Complete', foreground='Cyan', background='Blue'))
 
