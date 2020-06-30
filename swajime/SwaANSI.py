@@ -31,12 +31,12 @@ if 'win' in system().lower():
     k.SetConsoleMode(k.GetStdHandle(-11), 7)
     # os.system("") # This fix doesn't work either
     
-class class_or_instancemethod(classmethod):
+class _classOrInstancemethod(classmethod):
     def __get__(self, instance, type_):
-        descr_get = super(class_or_instancemethod, self).__get__ if instance is None else self.__func__.__get__
+        descr_get = super(_classOrInstancemethod, self).__get__ if instance is None else self.__func__.__get__
         return descr_get(instance, type_)
 
-# Used to initialize swaANSI class without instantiating any objects.
+# Used to initialize SwaANSI class without instantiating any objects.
 class MetaANSI(type):
     def __init__(cls, name, bases, d):
         if not 'HOME' in os.environ:
@@ -82,7 +82,7 @@ class MetaANSI(type):
         for color in cls.colors:
             cls._colors[color.lower()] = cls._colors[color]
 
-class swaANSI(six.with_metaclass(MetaANSI, object)):
+class SwaANSI(six.with_metaclass(MetaANSI, object)):
     _when = 'always'
     _colors = {}
     _default_foreground = None
@@ -99,7 +99,7 @@ class swaANSI(six.with_metaclass(MetaANSI, object)):
               'hide':'8',
               'strikethrough':'9'}
 
-    @class_or_instancemethod
+    @_classOrInstancemethod
     def display(self_or_cls, text, foreground=None, background=None, *style_list):
         # only add ansi if _when is 'always' or output is a tty
         if self_or_cls._when == 'never' or (self_or_cls._when == 'auto' and not sys.stdout.isatty()):
@@ -135,7 +135,7 @@ class swaANSI(six.with_metaclass(MetaANSI, object)):
                 pass
             elif style.lower() not in self_or_cls._styles:
                 print('Style {} is not available.'.format(style), file=sys.stderr)
-            else:
+            elif style is not None:
                 style_string_list.append(self_or_cls._styles[style.lower()])
         styles_string = ';'.join(style_string_list)
 
@@ -155,7 +155,7 @@ class swaANSI(six.with_metaclass(MetaANSI, object)):
             print("Invalid WHEN.  Valid values are 'never', 'always', or 'auto'.", file=sys.stderr)
             cls._when = 'never'
 
-    @class_or_instancemethod
+    @_classOrInstancemethod
     def setForeground(self_or_cls, color):
         if color is None:
             self_or_cls._default_foreground = None
@@ -165,7 +165,7 @@ class swaANSI(six.with_metaclass(MetaANSI, object)):
             else:
                 self_or_cls._default_foreground = color
 
-    @class_or_instancemethod
+    @_classOrInstancemethod
     def setBackground(self_or_cls, color):
         if color is None:
             self_or_cls._default_background = None
@@ -175,7 +175,7 @@ class swaANSI(six.with_metaclass(MetaANSI, object)):
             else:
                 self_or_cls._default_background = color
 
-    @class_or_instancemethod
+    @_classOrInstancemethod
     def setStyles(self_or_cls, *style_list):
         self_or_cls._default_styles = []
         for style in style_list:
@@ -183,10 +183,10 @@ class swaANSI(six.with_metaclass(MetaANSI, object)):
                 pass
             elif style.lower() not in self_or_cls._styles:
                 print('Style {} is not available.'.format(style), file=sys.stderr)
-            else:
+            elif style is not None:
                 self_or_cls._default_styles.append(style)
 
-    @class_or_instancemethod
+    @_classOrInstancemethod
     def setDefaults(self_or_cls, foreground=None, background=None, *style_list):
         self_or_cls.setForeground(foreground)
         self_or_cls.setBackground(background)
@@ -200,34 +200,34 @@ class swaANSI(six.with_metaclass(MetaANSI, object)):
 
 if __name__ == "__main__":
     print('Color test.');   
-    for color in sorted(swaANSI.colors):
-        print(swaANSI.display('{:>40}'.format('This is a {} foreground!'.format(color)), color, None) + swaANSI.display('{:<40}'.format('This is a {} background!'.format(color)), None, color))
+    for color in sorted(SwaANSI.colors):
+        print(SwaANSI.display('{:>40}'.format('This is a {} foreground!'.format(color)), color, None) + SwaANSI.display('{:<40}'.format('This is a {} background!'.format(color)), None, color))
 
     print()
 
     print('Style test.');
-    for style in swaANSI.styles:
-        print(swaANSI.display('This is a {} test!'.format(style), 'WHITE', None, style))
+    for style in SwaANSI.styles:
+        print(SwaANSI.display('This is a {} test!'.format(style), 'WHITE', None, style))
     
-    print(swaANSI.display('This should be red!', 'Red', None, 'UNDERLINE', 'BLINKING'))
-    print(swaANSI.display('This should be red!', 'RED'))
-    print(swaANSI.display('Testing', None, None, None, None, None, None))
-    print(swaANSI.display('Testing', 'FAKE', 'FAKE', 'FAKE', 'FAKE', 'FAKE', 'FAKE'))
-    print(swaANSI.display('Testing', 'RED', 'FAKE', 'FAKE', 'FAKE', 'FAKE', 'FAKE'))
-    print(swaANSI.display('Testing', 'RED', 'YELLOW', 'FAKE', 'FAKE', 'FAKE', 'FAKE'))
-    print(swaANSI.display('Testing', 'RED', 'YELLOW', 'UNDERLINE', 'FAKE', 'FAKE', 'FAKE'))
+    print(SwaANSI.display('This should be red!', 'Red', None, 'UNDERLINE', 'BLINKING'))
+    print(SwaANSI.display('This should be red!', 'RED'))
+    print(SwaANSI.display('Testing', None, None, None, None, None, None))
+    print(SwaANSI.display('Testing', 'FAKE', 'FAKE', 'FAKE', 'FAKE', 'FAKE', 'FAKE'))
+    print(SwaANSI.display('Testing', 'RED', 'FAKE', 'FAKE', 'FAKE', 'FAKE', 'FAKE'))
+    print(SwaANSI.display('Testing', 'RED', 'YELLOW', 'FAKE', 'FAKE', 'FAKE', 'FAKE'))
+    print(SwaANSI.display('Testing', 'RED', 'YELLOW', 'UNDERLINE', 'FAKE', 'FAKE', 'FAKE'))
     
-    swaANSI.setBackground('BLUE')
-    swaANSI.setForeground('CYAN')
-    swaANSI.setStyles('STRIKETHROUGH', 'Invalid', 'UNDERLINE')
+    SwaANSI.setBackground('BLUE')
+    SwaANSI.setForeground('CYAN')
+    SwaANSI.setStyles('STRIKETHROUGH', 'Invalid', 'UNDERLINE')
 
-    print(swaANSI.display('cyan on blue defaults'))
+    print(SwaANSI.display('cyan on blue defaults'))
 
-    swaANSI.setDefaults('YELLOW', 'GREEN', 'STRIKETHROUGH', 'UNDERLINE')
-    print(swaANSI.display('yellow on green defaults'))
+    SwaANSI.setDefaults('YELLOW', 'GREEN', 'STRIKETHROUGH', 'UNDERLINE')
+    print(SwaANSI.display('yellow on green defaults'))
 
-    red_error = swaANSI('RED', 'WHITE', 'UNDERLINE')
-    yellow_warning = swaANSI('YELLOW', 'BLACK', 'UNDERLINE')
+    red_error = SwaANSI('RED', 'WHITE', 'UNDERLINE')
+    yellow_warning = SwaANSI('YELLOW', 'BLACK', 'UNDERLINE')
 
     print(yellow_warning.display('This is a yellow warning'))
     print(red_error.display('This is a red error'))
@@ -240,10 +240,9 @@ if __name__ == "__main__":
     print(red_error.display('This is a red error', 'Magenta', 'Green'))
    
 
-    print(swaANSI.display('yellow on green defaults'))
+    print(SwaANSI.display('yellow on green defaults'))
 
     print(yellow_warning.display('This is a yellow warning'))
     print(red_error.display('This is a red error'))
     
-    print(swaANSI.display('Testing Complete', foreground='Cyan', background='Blue'))
-
+    print(SwaANSI.display('Testing Complete', foreground='Cyan', background='Blue'))
