@@ -241,4 +241,6 @@ if __name__ == "__main__":
 
     print(yellow_warning.display('This is a yellow warning'))
     print(red_error.display('This is a red error'))
+    
+    print(ANSI.display('Testing Complete', foreground='Cyan', background='Blue'))
 
