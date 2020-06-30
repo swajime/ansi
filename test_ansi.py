@@ -17,10 +17,9 @@ WARNING_COLOR = "YELLOW"
 ERROR_COLOR = "RED"
 
 from subprocess import check_output, STDOUT, CalledProcessError
-from swajime import swaANSI as ANSI
+from swajime import SwaANSI as ANSI
 
 import argparse
-import os
 import sys
 
 # The purpose of this function is to convert bytestrings or strings to strings before printing.
