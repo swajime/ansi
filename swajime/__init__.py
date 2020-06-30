@@ -1,1 +1,1 @@
-from .swaANSI import swaANSI
+from .SwaANSI import SwaANSI
