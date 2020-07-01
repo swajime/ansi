@@ -10,6 +10,42 @@
 # Please report any issues to john@swajime.com
 #
 
+"""ANSI wrapper for text strings
+
+This class allows the user to wrap strings with ansi color escape sequences
+without the user having to know how they work.
+Examples follow:
+
+Note that not all styles work on all terminals.
+Also note that some styles do not mix well with colors.
+
+To see colors available, view SwaANSI.colors
+    from swajime import SwaANSI
+    print(SwaANSI.colors)
+    for color in sorted(SwaANSI.colors): print(SwaANSI.wrap(color, color))
+    
+To see styles available, view SwaANSI.styles
+    from swajime import SwaANSI
+    print(SwaANSI.styles)
+    for style in sorted(SwaANSI.styles): print(SwaANSI.wrap(style, None, None, style))
+    
+The class can be accessed without instances:
+    from swajime import SwaANSI
+    print(SwaANSI.wrap('This is red text', 'Red', 'Yellow', 'Bold', 'Underline', 'Strikethrough'))
+
+Or you can create different objects with different attributes:
+    from swajime import SwaANSI
+    greenSuccess = SwaANSI('Green', None, 'Bold')
+    yellowWarning = SwaANSI('Yellow', None, 'Underline')
+    redError = SwaANSI('Red', None, 'Double Underline')
+    
+    print(greenSuccess.wrap('This is a green success'))
+    print(yellowWarning.wrap('This is a yellow warning'))
+    print(redError.wrap('This is a red error'))
+
+Please report any bugs or issues to john@swajime.com
+"""
+
 # from __future__ imports must occur at the beginning of the file
 from __future__ import print_function
 
@@ -85,13 +121,23 @@ class MetaANSI(type):
         for color in color_data:
             cls._colors[color['name']] = color['colorId']
         
-        # Make colors and styles available as class attributes
+        # Make colors available as class tuple
         cls.colors = tuple(cls._colors.keys())
-        cls.styles = tuple(cls._styles.keys())
         
         # enable case insensitive lookups
         for color in cls.colors:
             cls._colors[color.lower()] = cls._colors[color]
+
+        properStyle = []
+        for style in cls._styles.keys():
+            properStyle.append(style.title())
+            
+        # Make styles available as class tuple
+        cls.styles = tuple(properStyle)
+
+        # enable case insensitive lookups
+        for style in cls._styles:
+            cls._styles[style.lower()] = cls._styles[style]
 
 class SwaANSI(six.with_metaclass(MetaANSI, object)):
     """Allows adding color and other attributes to text strings.
