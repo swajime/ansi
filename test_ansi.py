@@ -1,18 +1,18 @@
 #!/usr/bin/env python
 #
-# Author: John.Simpson@hmhs.com john@swajime.com
+# Author: john@swajime.com
 # 
 # This is just a test script for ansi.py
 # Works with Python 2 or Python 3
 # Runs on Linux or Windows
 #
-# Please report any issues to author.
+# Please report any issues to john@swajime.com.
 #
 
 # from __future__ imports must occur at the beginning of the file
 from __future__ import print_function
 
-VERSION = "0.0.3"
+VERSION = "0.0.4" # 07/01/2020
 WARNING_COLOR = "YELLOW"
 ERROR_COLOR = "RED"
 
@@ -54,13 +54,13 @@ if __name__ == "__main__":
     ANSI.setWHEN(args.color)
     
     yellowWarning = ANSI(WARNING_COLOR)
-    redError = ANSI(ERROR_COLOR, None, 'BLINKING')
+    redError = ANSI(ERROR_COLOR, None, 'Double Underline')
     
     output = ''
 
     try:
         # attempt some shell commands that may error out
-        output += ANSI.display('Use --color option to enable color.', 'YELLOW', None, 'UNDERLINE') + '\n'
+        output += ANSI.wrap('Use --color option to enable color.', 'YELLOW', None, 'UNDERLINE') + '\n'
         output += fsdecode(check_output(['echo', 'java', 'HelloWorld'], stderr=STDOUT))
         output += fsdecode(check_output(['java', 'not found', 'ExcelWriter'], stderr=STDOUT))
         output += fsdecode(check_output(['echo', 'java', 'SimpleExcelReaderExample'], stderr=STDOUT))
@@ -73,10 +73,10 @@ if __name__ == "__main__":
 
         # print any output we can from the failing call in YELLOW
         if e.output:
-            print(yellowWarning.display(fsdecode(e.output)))
+            print(yellowWarning.wrap(fsdecode(e.output)))
 
         # print the error itself in RED
-        print(redError.display("CalledProcessError: Command '{}' returned {}.".format(" ".join(e.cmd), e.returncode)))
+        print(redError.wrap("CalledProcessError: Command '{}' returned {}.".format(" ".join(e.cmd), e.returncode)))
 
     except OSError as e:
         # print any output we did collect
@@ -85,6 +85,6 @@ if __name__ == "__main__":
         
         # print the error itself in RED
         if e.filename:
-            print(ANSI.display("OSError: {}: {} in file {}.".format(e.errno, e.strerror, e.filename), ERROR_COLOR))
+            print(ANSI.wrap("OSError: {}: {} in file {}.".format(e.errno, e.strerror, e.filename), ERROR_COLOR))
         else:
-            print(ANSI.display("OSError: {}: {}.".format(e.errno, e.strerror), ERROR_COLOR))
+            print(ANSI.wrap("OSError: {}: {}.".format(e.errno, e.strerror), ERROR_COLOR))

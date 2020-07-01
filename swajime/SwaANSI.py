@@ -1,17 +1,19 @@
 #!/usr/bin/env python
 #
-# Author: John.Simpson@hmhs.com / john@swajime.com
+# Author: john@swajime.com
 #
 # Project started: 06/26/2020
 #
 # Compatible with Python 2 and Python 3
 # Runs on Linux or Windows
 #
+# Please report any issues to john@swajime.com
+#
 
 # from __future__ imports must occur at the beginning of the file
 from __future__ import print_function
 
-VERSION = "0.0.3"
+VERSION = "0.0.4"  # 07/01/2020
 color_file_dir = 'dat'  # in $HOME
 color_file_name = 'color_data.json';
 
@@ -32,13 +34,22 @@ if 'win' in system().lower():
     # os.system("") # This fix doesn't work either
     
 class _classOrInstancemethod(classmethod):
+    """Private decorator allowing methods to be class methods or instance methods."""
+    
     def __get__(self, instance, type_):
         descr_get = super(_classOrInstancemethod, self).__get__ if instance is None else self.__func__.__get__
         return descr_get(instance, type_)
 
-# Used to initialize SwaANSI class without instantiating any objects.
+# 
 class MetaANSI(type):
+    """Meta class used to initialize SwaANSI class before instantiating any objects.
+    
+    The SwaANSI class does not require object instantiation.
+    """
+    
     def __init__(cls, name, bases, d):
+        """Sets up SwaANSI.colors and SwaANSI.styles tuples."""
+        
         if not 'HOME' in os.environ:
             if not 'HOMEDRIVE' in os.environ or not 'HOMEPATH' in os.environ:
                 raise EnvironmentError('The color library requires HOME or HOMEDRIVE and HOMEPATH to be set in your environment.  JSON for available colors will be stored in {}.'.format(os.path.join('$HOME', color_file_dir, color_file_name)))
@@ -83,24 +94,206 @@ class MetaANSI(type):
             cls._colors[color.lower()] = cls._colors[color]
 
 class SwaANSI(six.with_metaclass(MetaANSI, object)):
+    """Allows adding color and other attributes to text strings.
+    
+    Attributes
+    ----------
+    colors : tuple(str)
+        a list of strings identifying available colors
+    styles : tuple(str)
+        a list of strings identifying available attributes
+        
+    Methods
+    -------
+    setWHEN('always'|'auto'|'never')
+        Enable or disable the wrap of colors and attributes
+    setForeground(color=None)
+        Set the foreground for class or instance for future wrap
+    setBackground(color=None)
+        Set the background for class or instance for future wrap
+    setStyles(*style_list)
+        Set the styles for class or instance for future wrap
+    setDefaults(foreground=None, background=None, *style_list)
+        Set all colors and attributes for class or instance for future wrap
+    wrap(text=None, foreground=None, background=None, *style_list)
+        Wrap the text with escape codes for the given (or previously set) attributes
+    """
+    
     _when = 'always'
     _colors = {}
     _default_foreground = None
     _default_background = None
     _default_styles = []
     _styles = {'default':'0',
-              'bold':'1',
-              'faint':'2',
-              'italic':'3', 
-              'underline':'4',
-              'blinking':'5',
-              'fast_blinking':'6',
-              'reverse':'7',
-              'hide':'8',
-              'strikethrough':'9'}
+               'reset':'0',
+               'normal':'0',
+               'bold':'1',
+               'faint':'2',
+               'italic':'3', 
+               'underline':'4',
+               'blinking':'5',
+               'slow blink':'5',
+               'fast_blinking':'6',
+               'rapid blink':'6',
+               'reverse':'7',
+               'hide':'8',
+               'conceal':'8',
+               'strikethrough':'9',
+               'crossed-out':'9',
+               'fraktur':'20',
+               'double underline':'21',
+               'framed':'51',
+               'encircled':'52',
+               'overlined':'53',
+               'underline color':'58',
+               'ideogram underline':'60',
+               'ideogram double underline':'61',
+               'ideogram overline':'62',
+               'ideogram double overline':'63',
+               'ideogram stress':'64',
+               'superscript':'73',
+               'subscript':'74'
+               }
+
+    def __init__(self, foreground=None, background=None, *style_list):
+        """
+        Parameters
+        ----------
+        foreground : str, optional
+            The foreground color to be added for future wraps
+        background : str, optional
+            The background color to be added for future wraps
+        style_list : list(str), optional
+            A list of styles to be added for future wraps
+        """
+        
+        self.setForeground(foreground)
+        self.setBackground(background)
+        self.setStyles(*style_list)
+
+    # always: enables color
+    # never: disables color
+    # auto: enables color only if output is a tty or console
+    @classmethod
+    def setWHEN(cls, when):
+        """Enables or disables SwaANSI.
+        
+        Parameters
+        ----------
+        when : str, mandatory
+            Preset to 'always'.
+            'always': Always add color and attributes.
+            'never': Never add color and attributes.
+            'auto': Add color and attributes if output is a tty. 
+        """
+        
+        if when in ('never', 'always', 'auto'):
+            cls._when = when
+        else:
+            print("Invalid WHEN.  Valid values are 'never', 'always', or 'auto'.", file=sys.stderr)
+            cls._when = 'never'
 
     @_classOrInstancemethod
-    def display(self_or_cls, text, foreground=None, background=None, *style_list):
+    def setForeground(self_or_cls, color=None):
+        """Sets the foreground color to be used for a class or an instance.
+        
+        If the argument `color` isn't passed in, the foreground is not set by default when wrapping.
+        
+        Parameters
+        ----------
+        color : str, optional
+            Set the default foreground color for future wrapping.            
+        """
+        
+        if color is None:
+            self_or_cls._default_foreground = None
+        else:
+            if color.lower() not in self_or_cls._colors:
+                print('Foreground color {} is not available.'.format(color), file=sys.stderr)
+            else:
+                self_or_cls._default_foreground = color
+
+    @_classOrInstancemethod
+    def setBackground(self_or_cls, color=None):
+        """Sets the background color to be used for a class or an instance.
+        
+        If the argument `color` isn't passed in, the background is not set by default when wrapping.
+
+        Parameters
+        ----------
+        color : str, optional
+            Set the default background color for future wrapping.            
+        """
+        
+        if color is None:
+            self_or_cls._default_background = None
+        else:
+            if color.lower() not in self_or_cls._colors:
+                print('Background color {} is not available.'.format(color), file=sys.stderr)
+            else:
+                self_or_cls._default_background = color
+
+    @_classOrInstancemethod
+    def setStyles(self_or_cls, *style_list):
+        """Sets the style list to be used for a class or an instance.
+        
+        If no `style_list` arguments are passed in, the attributes are not set by default when wrapping.
+
+        Parameters
+        ----------
+        style_list : list[str], optional
+            Set the default style list for future wrapping.            
+        """
+        
+        self_or_cls._default_styles = []
+        for style in style_list:
+            if style is None:
+                pass
+            elif style.lower() not in self_or_cls._styles:
+                print('Style {} is not available.'.format(style), file=sys.stderr)
+            elif style is not None:
+                self_or_cls._default_styles.append(style)
+
+    @_classOrInstancemethod
+    def setDefaults(self_or_cls, foreground=None, background=None, *style_list):
+        """Sets the foreground, background, and style list to be used for a class or an instance.
+        
+        All parameters are optional.
+
+        Parameters
+        ----------
+        foreground : str, optional
+            Set the default foreground color for future wrapping.            
+        background : str, optional
+            Set the default background color for future wrapping.            
+        style_list : list[str], optional
+            Set the default style list for future wrapping.            
+        """
+        
+        self_or_cls.setForeground(foreground)
+        self_or_cls.setBackground(background)
+        self_or_cls.setStyles(*style_list)
+
+    @_classOrInstancemethod
+    def wrap(self_or_cls, text=None, foreground=None, background=None, *style_list):
+        """Wraps the text string with ansi escape codes for color and attributes.
+        
+        All parameters are optional.
+        
+        Parameters:
+        text : str, optional
+            The text that will be wrapped
+        foreground:
+            If set, overrides the default foreground color
+        background:
+            If set, overrides the default background color
+        style_list:
+            If set, overrides the default style list
+        """
+        
+        if text is None:
+            text = ""
+            
         # only add ansi if _when is 'always' or output is a tty
         if self_or_cls._when == 'never' or (self_or_cls._when == 'auto' and not sys.stdout.isatty()):
             return text
@@ -144,105 +337,60 @@ class SwaANSI(six.with_metaclass(MetaANSI, object)):
         else:
             return text
         
-    # always: enables color
-    # never: disables color
-    # auto: enables color only if output is a tty or console
-    @classmethod
-    def setWHEN(cls, when):
-        if when in ('never', 'always', 'auto'):
-            cls._when = when
-        else:
-            print("Invalid WHEN.  Valid values are 'never', 'always', or 'auto'.", file=sys.stderr)
-            cls._when = 'never'
-
-    @_classOrInstancemethod
-    def setForeground(self_or_cls, color):
-        if color is None:
-            self_or_cls._default_foreground = None
-        else:
-            if color.lower() not in self_or_cls._colors:
-                print('Foreground color {} is not available.'.format(color), file=sys.stderr)
-            else:
-                self_or_cls._default_foreground = color
-
-    @_classOrInstancemethod
-    def setBackground(self_or_cls, color):
-        if color is None:
-            self_or_cls._default_background = None
-        else:
-            if color.lower() not in self_or_cls._colors:
-                print('Background color {} is not available.'.format(color), file=sys.stderr)
-            else:
-                self_or_cls._default_background = color
-
-    @_classOrInstancemethod
-    def setStyles(self_or_cls, *style_list):
-        self_or_cls._default_styles = []
-        for style in style_list:
-            if style is None:
-                pass
-            elif style.lower() not in self_or_cls._styles:
-                print('Style {} is not available.'.format(style), file=sys.stderr)
-            elif style is not None:
-                self_or_cls._default_styles.append(style)
-
-    @_classOrInstancemethod
-    def setDefaults(self_or_cls, foreground=None, background=None, *style_list):
-        self_or_cls.setForeground(foreground)
-        self_or_cls.setBackground(background)
-        self_or_cls.setStyles(*style_list)
-
-    def __init__(self, foreground=None, background=None, *style_list):
-        self.setForeground(foreground)
-        self.setBackground(background)
-        self.setStyles(*style_list)
-
 
 if __name__ == "__main__":
     print('Color test.');   
     for color in sorted(SwaANSI.colors):
-        print(SwaANSI.display('{:>40}'.format('This is a {} foreground!'.format(color)), color, None) + SwaANSI.display('{:<40}'.format('This is a {} background!'.format(color)), None, color))
+        print(SwaANSI.wrap('{:>40}'.format('This is a {} foreground!'.format(color)), color, None) + SwaANSI.wrap('{:<40}'.format('This is a {} background!'.format(color)), None, color))
 
     print()
 
     print('Style test.');
     for style in SwaANSI.styles:
-        print(SwaANSI.display('This is a {} test!'.format(style), 'WHITE', None, style))
+        print(SwaANSI.wrap('This is a {} test!'.format(style), 'WHITE', None, style))
     
-    print(SwaANSI.display('This should be red!', 'Red', None, 'UNDERLINE', 'BLINKING'))
-    print(SwaANSI.display('This should be red!', 'RED'))
-    print(SwaANSI.display('Testing', None, None, None, None, None, None))
-    print(SwaANSI.display('Testing', 'FAKE', 'FAKE', 'FAKE', 'FAKE', 'FAKE', 'FAKE'))
-    print(SwaANSI.display('Testing', 'RED', 'FAKE', 'FAKE', 'FAKE', 'FAKE', 'FAKE'))
-    print(SwaANSI.display('Testing', 'RED', 'YELLOW', 'FAKE', 'FAKE', 'FAKE', 'FAKE'))
-    print(SwaANSI.display('Testing', 'RED', 'YELLOW', 'UNDERLINE', 'FAKE', 'FAKE', 'FAKE'))
+    print(SwaANSI.wrap('This should be red!', 'Red', None, 'UNDERLINE', 'BLINKING'))
+    print(SwaANSI.wrap('This should be red!', 'RED'))
+    print(SwaANSI.wrap('Testing', None, None, None, None, None, None))
+    print(SwaANSI.wrap('Testing', 'FAKE', 'FAKE', 'FAKE', 'FAKE', 'FAKE', 'FAKE'))
+    print(SwaANSI.wrap('Testing', 'RED', 'FAKE', 'FAKE', 'FAKE', 'FAKE', 'FAKE'))
+    print(SwaANSI.wrap('Testing', 'RED', 'YELLOW', 'FAKE', 'FAKE', 'FAKE', 'FAKE'))
+    print(SwaANSI.wrap('Testing', 'RED', 'YELLOW', 'UNDERLINE', 'FAKE', 'FAKE', 'FAKE'))
     
     SwaANSI.setBackground('BLUE')
     SwaANSI.setForeground('CYAN')
     SwaANSI.setStyles('STRIKETHROUGH', 'Invalid', 'UNDERLINE')
 
-    print(SwaANSI.display('cyan on blue defaults'))
+    print(SwaANSI.wrap('cyan on blue defaults'))
 
     SwaANSI.setDefaults('YELLOW', 'GREEN', 'STRIKETHROUGH', 'UNDERLINE')
-    print(SwaANSI.display('yellow on green defaults'))
+    print(SwaANSI.wrap('yellow on green defaults'))
 
     red_error = SwaANSI('RED', 'WHITE', 'UNDERLINE')
     yellow_warning = SwaANSI('YELLOW', 'BLACK', 'UNDERLINE')
 
-    print(yellow_warning.display('This is a yellow warning'))
-    print(red_error.display('This is a red error'))
+    print(yellow_warning.wrap('This is a yellow warning'))
+    print(red_error.wrap('This is a red error'))
 
     red_error.setDefaults('Magenta', 'Green', 'Blinking')
-    print(yellow_warning.display('This is a yellow warning'))
-    print(red_error.display('This is a red error'))
+    print(yellow_warning.wrap('This is a yellow warning'))
+    print(red_error.wrap('This is a red error'))
 
-    print(yellow_warning.display('This is a yellow warning'))
-    print(red_error.display('This is a red error', 'Magenta', 'Green'))
+    print(yellow_warning.wrap('This is a yellow warning'))
+    print(red_error.wrap('This is a red error', 'Magenta', 'Green'))
    
 
-    print(SwaANSI.display('yellow on green defaults'))
+    print(SwaANSI.wrap('yellow on green defaults'))
 
-    print(yellow_warning.display('This is a yellow warning'))
-    print(red_error.display('This is a red error'))
+    print(yellow_warning.wrap('This is a yellow warning'))
+    print(red_error.wrap('This is a red error'))
     
-    print(SwaANSI.display('Testing Complete', foreground='Cyan', background='Blue'))
+    print(SwaANSI.wrap('Testing Complete', foreground='Cyan', background='Blue'))
+
+    plainANSI = SwaANSI()
+    plainANSI.setForeground()
+    plainANSI.setBackground()
+    plainANSI.setStyles()
+    plainANSI.setDefaults()
+    print(plainANSI.wrap())
+    print(plainANSI.wrap("Hello World!"))
