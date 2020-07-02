@@ -1,5 +1,8 @@
 # SwaANSI
 
+* Tested on: os: [ubuntu-16.04, ubuntu-latest, macos-latest, windows-latest]
+* Tested on: python-version: [2.7, 3.5, 3.6, 3.7, 3.8, pypy2, pypy3]
+
 ![Python package](https://github.com/swajime/ansi/workflows/Python%20package/badge.svg)
 
 Enable wrapping text with color and attributes per ANSI escape sequences.
