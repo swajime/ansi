@@ -4,11 +4,10 @@
 """Test the SwaANSI module"""
 
 import os
-import pytest
 import shutil
 import sys
+import time
 import unittest
-
 
 # reload is needed for one of the tests
 if sys.version_info[0] == 3:
@@ -24,25 +23,29 @@ class TestSwaANSI(unittest.TestCase):
     def test_class__init__no_dat(self):
         home = os.environ['HOME']
 
-        if os.path.exists('{}/dat'.format(home)):
-            os.rename('{}/dat'.format(home), '{}/dat-bak'.format(home))
+        if os.path.exists(os.path.join(home, 'dat')):
+            os.rename(os.path.join(home, 'dat'), os.path.join(home, 'dat-bak'))
 
-        found_before = os.path.exists('{}/dat'.format(home))
+        found_before = os.path.exists(os.path.join(home, 'dat'))
 
         if 'swajime' in sys.modules:
             del sys.modules['swajime.SwaANSI']
-        #     #del sys.modules['swajime']
 
         import swajime
         reload(swajime)
         from swajime import SwaANSI
 
-        found_after = os.path.exists('{}/dat/color_data.json'.format(home))
+        found_after = os.path.exists(os.path.join(home, 'dat',
+                                                  'color_data.json'))
 
-        if os.path.exists('{}/dat-bak'.format(home)):
-            if os.path.exists('{}/dat'.format(home)):
-                shutil.rmtree('{}/dat'.format(home))
-            os.rename('{}/dat-bak'.format(home), '{}/dat'.format(home))
+        if os.path.exists(os.path.join(home, 'dat-bak')):
+            if os.path.exists(os.path.join(home, 'dat')):
+                shutil.rmtree(os.path.join(home, 'dat'))
+            os.rename(os.path.join(home, 'dat-bak'), os.path.join(home, 'dat'))
+
+        # fix for some random race condition
+        while not os.path.exists(os.path.join(home, 'dat', 'color_data.json')):
+            time.sleep(1)
 
         assert not found_before
         assert found_after
@@ -51,13 +54,22 @@ class TestSwaANSI(unittest.TestCase):
         self.assertEqual(green_background, '\033[48;5;2mtest\033[0m')
 
     def test_class__init__(self):
+        if 'swajime' in sys.modules:
+            del sys.modules['swajime.SwaANSI']
+        import swajime
+        reload(swajime)
         from swajime import SwaANSI
+
         self.assertGreater(len(SwaANSI.colors), 200,
                            'Verify at least 200 colors available.')
         self.assertGreater(len(SwaANSI.styles), 20,
                            'Verify at least 20 styles available.')
 
     def test_class_wrap(self):
+        if 'swajime' in sys.modules:
+            del sys.modules['swajime.SwaANSI']
+        import swajime
+        reload(swajime)
         from swajime import SwaANSI
 
         SwaANSI.setWHEN('ALWAYS')
@@ -98,6 +110,10 @@ class TestSwaANSI(unittest.TestCase):
         self.assertEqual(green_background, 'test')
 
     def test_object_wrap(self):
+        if 'swajime' in sys.modules:
+            del sys.modules['swajime.SwaANSI']
+        import swajime
+        reload(swajime)
         from swajime import SwaANSI
 
         SwaANSI.setWHEN('ALWAYS')
@@ -144,6 +160,3 @@ class TestSwaANSI(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
-# Rename this module to match this regular expression:
-#     "(([a-z_][a-z0-9_]*)|([A-Z][a-zA-Z0-9]+))$".
