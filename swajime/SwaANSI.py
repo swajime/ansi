@@ -61,7 +61,7 @@ import requests
 import six
 import sys
 
-VERSION = "0.1.0"  # 07/22/2020
+VERSION = "0.1.1"  # 07/22/2020
 # color_file_dir is a subdirectory in $HOME
 color_file_dir = 'dat'
 color_file_name = 'color_data.json'
