@@ -1,3 +1,5 @@
+"""This file helps to publish the module."""
+
 import setuptools
 
 with open("README.md", "r") as fh:
@@ -5,7 +7,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="SwaANSI-pkg-swajime",
-    version="0.0.4",
+    version="0.1.0",
     author="John Simpson",
     author_email="john@swajime.com",
     description="Enable wrapping text with color and attributes.",

@@ -61,7 +61,7 @@ import requests
 import six
 import sys
 
-VERSION = "0.0.5"  # 07/17/2020
+VERSION = "0.1.0"  # 07/22/2020
 # color_file_dir is a subdirectory in $HOME
 color_file_dir = 'dat'
 color_file_name = 'color_data.json'
@@ -255,15 +255,15 @@ class SwaANSI(six.with_metaclass(MetaANSI, object)):
             'auto': Add color and attributes if output is a tty.
         """
 
-        if when in ('never', 'always', 'auto'):
-            cls._when = when
+        if when.lower() in ('never', 'always', 'auto'):
+            cls._when = when.lower()
         else:
             print("Invalid WHEN.  Valid values are 'never', 'always', or " +
                   "'auto'.", file=sys.stderr)
             cls._when = 'never'
 
     @_classOrInstancemethod
-    def setForeground(self_or_cls, color=None):
+    def setForeground(self_or_cls, color=None):  # NOSONAR
         """Sets the foreground color to be used for a class or an instance.
 
         If the argument `color` isn't passed in, the foreground is not set by
@@ -285,7 +285,7 @@ class SwaANSI(six.with_metaclass(MetaANSI, object)):
                 self_or_cls._default_foreground = color
 
     @_classOrInstancemethod
-    def setBackground(self_or_cls, color=None):
+    def setBackground(self_or_cls, color=None):  # NOSONAR
         """Sets the background color to be used for a class or an instance.
 
         If the argument `color` isn't passed in, the background is not set by
@@ -307,7 +307,7 @@ class SwaANSI(six.with_metaclass(MetaANSI, object)):
                 self_or_cls._default_background = color
 
     @_classOrInstancemethod
-    def setStyles(self_or_cls, *style_list):
+    def setStyles(self_or_cls, *style_list):  # NOSONAR
         """Sets the style list to be used for a class or an instance.
 
         If no `style_list` arguments are passed in, the attributes are not set
@@ -322,7 +322,7 @@ class SwaANSI(six.with_metaclass(MetaANSI, object)):
         self_or_cls._default_styles = []
         for style in style_list:
             if style is None:
-                pass
+                pass  # NOSONAR
             elif style.lower() not in self_or_cls._styles:
                 print('Style {} is not available.'.format(style),
                       file=sys.stderr)
@@ -330,7 +330,7 @@ class SwaANSI(six.with_metaclass(MetaANSI, object)):
                 self_or_cls._default_styles.append(style)
 
     @_classOrInstancemethod
-    def setDefaults(self_or_cls, foreground=None, background=None,
+    def setDefaults(self_or_cls, foreground=None, background=None,  # NOSONAR
                     *style_list):
         """Sets the foreground, background, and style list to be used for a
             class or an instance.
@@ -352,7 +352,7 @@ class SwaANSI(six.with_metaclass(MetaANSI, object)):
         self_or_cls.setStyles(*style_list)
 
     @_classOrInstancemethod
-    def wrap(self_or_cls, text=None, foreground=None, background=None,
+    def wrap(self_or_cls, text=None, foreground=None, background=None,  # NOSONAR
              *style_list):
         """Wraps the text string with ansi escape codes for color and attributes.
 
@@ -369,11 +369,8 @@ class SwaANSI(six.with_metaclass(MetaANSI, object)):
             If set, overrides the default style list
         """
 
-        if text is None:
-            text = ""
-
         # only add ansi if _when is 'always' or output is a tty
-        if self_or_cls._when == 'never' or (
+        if text is None or text == '' or self_or_cls._when == 'never' or (
                 self_or_cls._when == 'auto' and not sys.stdout.isatty()):
             return text
 
@@ -408,7 +405,7 @@ class SwaANSI(six.with_metaclass(MetaANSI, object)):
         style_string_list = []
         for style in style_list:
             if style is None:
-                pass
+                pass  # NOSONAR
             elif style.lower() not in self_or_cls._styles:
                 print('Style {} is not available.'.
                       format(style), file=sys.stderr)
