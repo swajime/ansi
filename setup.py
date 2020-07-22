@@ -7,7 +7,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="SwaANSI-pkg-swajime",
-    version="0.1.0",
+    version="0.1.1",
     author="John Simpson",
     author_email="john@swajime.com",
     description="Enable wrapping text with color and attributes.",
