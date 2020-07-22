@@ -109,6 +109,7 @@ class MetaANSI(type):
 
         color_dir = os.path.join(HOME, color_file_dir)
         color_path = os.path.join(color_dir, color_file_name)
+
         if os.path.exists(color_path):
             with open(color_path, 'r') as color_file:
                 color_data = json.load(color_file)
@@ -123,15 +124,16 @@ class MetaANSI(type):
             url = 'https://jonasjacek.github.io/colors/data.json'
 
             try:
-                color_data = json.loads(requests.get(url).text)
+                json_color_data = requests.get(url).text
+                color_data = json.loads(json_color_data)
             except Exception as e:
                 print()
                 print(str(e))
                 print()
-                print('Could not download data.json.  Please download {} to ' +
-                      'the {} directory as {}.'.format(
+                print(('Could not download data.json.  Please download {} ' +
+                       'to the {} directory as {}.').format(
                             url, color_dir, color_file_name))
-                exit(1)
+                return
 
             if not os.path.isdir(color_dir):
                 os.mkdir(color_dir)
@@ -352,8 +354,8 @@ class SwaANSI(six.with_metaclass(MetaANSI, object)):
         self_or_cls.setStyles(*style_list)
 
     @_classOrInstancemethod
-    def wrap(self_or_cls, text=None, foreground=None, background=None,  # NOSONAR
-             *style_list):
+    def wrap(self_or_cls, text=None, foreground=None,  # NOSONAR
+             background=None, *style_list):
         """Wraps the text string with ansi escape codes for color and attributes.
 
         All parameters are optional.
